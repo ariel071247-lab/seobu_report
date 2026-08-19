@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>서부마케팅담당 유선 실적 점검 대시보드</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; -webkit-text-size-adjust: none; }
+
+:root {
+  --font: "Pretendard", -apple-system, "Malgun Gothic", sans-serif;
+  --bg:        #111111;
+  --bg2:       #1a1a1a;
+  --surface:   #DCDCDC;
+  --surface2:  #E9E9E9;
+  --border:    #333333;
+  --border-l:  #BFBFBF;
+  --text:      #111111;
+  --text-inv:  #FFFFFF;
+  --text-dim:  #555555;
+  --text-faint:#888888;
+  --orange:    #FF4600;
+  --orange2:   #FF7A3D;
+  --orange-s:  rgba(255,70,0,0.10);
+  --up:        #2E7D32;
+  --up-bg:     #E8F5E9;
+  --down:      #C62828;
+  --down-bg:   #FFEBEE;
+  --radius:    10px;
+  --radius-s:  6px;
+}
+
+body, button, input, select, textarea {
+  font-family: var(--font);
+  font-weight: 400;
+}
+body {
+  background-color: var(--bg);
+  color: var(--text-inv);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 80px;
+}
+a { color: inherit; text-decoration: none; }
+button { border: none; background: none; color: inherit; cursor: pointer; padding: 0; }
+ul { list-style: none; }
+
+/* ── HEADER ── */
+.page-header {
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex; align-items: center; height: 65px;
+  position: sticky; top: 0; z-index: 200;
+}
+.page-header .logo-area { display: flex; align-items: center; gap: 12px; }
+.page-header .logo-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.page-header .logo-text { font-weight: 700; font-size: 15px; letter-spacing: -0.03em; color: var(--text-inv); }
+.page-header .header-right { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+.page-header .updated-badge { font-size: 12px; color: var(--text-faint); }
+.page-header .nav-links { display: flex; }
+.page-header .nav-link {
+  padding: 0 16px; font-size: 14px; font-weight: 600;
+  color: var(--text-faint); line-height: 65px; transition: color .15s;
+}
+.page-header .nav-link:hover { color: var(--text-inv); }
+.page-header .nav-link.active { color: var(--orange); position: relative; }
+.page-header .nav-link.active::after {
+  content: ""; position: absolute; bottom: 0; left: 16px; right: 16px;
+  height: 2px; background: var(--orange); border-radius: 2px 2px 0 0;
+}
+
+/* ── TAB NAV mobile ── */
+.tab-nav-wrap { background: var(--bg2); border-bottom: 1px solid var(--border); display: none; }
+@media (max-width: 900px) { .page-header .nav-links { display: none; } .tab-nav-wrap { display: block; } }
+.tab-nav { display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 20px; }
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 0 0 auto; padding: 14px 14px 12px; font-size: 13px; font-weight: 600;
+  color: var(--text-faint); white-space: nowrap; position: relative; transition: color .15s;
+}
+.tab-btn .num { font-size: 10px; font-weight: 400; color: var(--text-faint); margin-right: 5px; }
+.tab-btn.active { color: var(--text-inv); }
+.tab-btn.active .num { color: var(--orange2); }
+.tab-btn.active::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: 0;
+  height: 2px; background: var(--orange); border-radius: 2px 2px 0 0;
+}
+
+/* ── MAIN ── */
+.main { max-width: 1280px; margin: 0 auto; padding: 32px 40px 10px; }
+@media (max-width: 640px) { .main { padding: 22px 16px 10px; } .page-header { padding: 0 16px; } }
+.tab-panel { display: none; animation: fadeIn .3s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── SECTION HEAD ── */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.section-head h2 { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--text-inv); }
+.section-head .sub { font-size: 12px; color: var(--text-faint); }
+
+/* ── CARD ── */
+.card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border-l); }
+
+/* ── INSIGHT ── */
+.insight-box {
+  display: flex; gap: 12px; padding: 14px 18px; margin-bottom: 20px;
+  border-radius: var(--radius-s); background: var(--surface2); border-left: 3px solid var(--orange);
+}
+.insight-box .insight-icon {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--orange); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+}
+.insight-box .insight-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange); margin-bottom: 5px; }
+.insight-box ul { display: flex; flex-direction: column; gap: 4px; }
+.insight-box li { position: relative; padding-left: 12px; font-size: 12.5px; line-height: 1.6; color: var(--text-dim); }
+.insight-box li::before { content: ""; position: absolute; left: 0; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--orange2); }
+
+/* ── KPI ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .kpi-grid { grid-template-columns: 1fr; } }
+.kpi-card { padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; }
+.kpi-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--orange), transparent 70%); }
+.kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kpi-name { font-weight: 600; font-size: 14px; color: var(--text); }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.pill.up   { background: var(--up-bg);   color: var(--up); }
+.pill.down { background: var(--down-bg); color: var(--down); }
+.pill.flat { background: var(--surface2); color: var(--text-dim); }
+.kpi-body { display: flex; align-items: center; gap: 16px; }
+.gauge {
+  --pct: 0; width: 72px; height: 72px; border-radius: 50%; flex: 0 0 auto;
+  background: conic-gradient(var(--orange) calc(var(--pct)*3.6deg), #BFBFBF 0deg);
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.gauge::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: var(--surface); }
+.gauge span { position: relative; z-index: 1; font-weight: 700; font-size: 15px; color: var(--text); }
+.kpi-figures { flex: 1; min-width: 0; }
+.kpi-figures .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); padding: 3px 0; border-bottom: 1px dashed var(--border-l); }
+.kpi-figures .row:last-child { border-bottom: none; }
+.kpi-figures .row b { font-weight: 600; color: var(--text); }
+.kpi-review { padding-top: 10px; border-top: 1px solid var(--border-l); }
+.kpi-review .review-label { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+.kpi-review ul { display: flex; flex-direction: column; gap: 4px; }
+.kpi-review li { position: relative; padding-left: 10px; font-size: 12px; line-height: 1.55; color: var(--text-dim); }
+.kpi-review li::before { content: "–"; position: absolute; left: 0; top: 0; color: var(--text-faint); }
+
+/* ── ORG TABLE ── */
+.table-scroll { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border-l); }
+.org-tables-stack { display: flex; flex-direction: column; gap: 20px; }
+table.org-table { width: 100%; border-collapse: collapse; min-width: 600px; background: var(--surface); }
+table.org-table caption { text-align: left; padding: 14px 18px 10px; font-weight: 700; font-size: 14px; color: var(--text); }
+table.org-table th, table.org-table td { padding: 11px 16px; font-size: 13px; text-align: right; border-bottom: 1px solid var(--border-l); white-space: nowrap; color: var(--text); }
+table.org-table th { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); background: var(--surface2); }
+table.org-table th:first-child, table.org-table td:first-child { text-align: left; }
+table.org-table tbody tr:last-child td { border-bottom: none; }
+table.org-table tbody tr:hover td { background: rgba(0,0,0,0.04); }
+table.org-table td.org-name { font-weight: 600; }
+table.org-table td.rate { font-weight: 700; }
+table.org-table tr.highlight td { background: rgba(255,70,0,0.06); }
+table.org-table tr.highlight td:first-child { position: relative; border-left: 3px solid var(--orange); }
+table.org-table tr.highlight td.org-name { color: var(--orange); }
+table.org-table tr.highlight td.rate { color: var(--orange); }
+
+/* ── RETAIL ── */
+.team-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+@media (max-width: 900px) { .team-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .team-summary-grid { grid-template-columns: 1fr; } }
+.team-summary-card { padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 10px; }
+.team-summary-card .ts-name { font-weight: 700; font-size: 15px; color: var(--text); }
+.team-summary-card .ts-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+.team-summary-card .ts-label { color: var(--text-faint); }
+.team-summary-card .ts-value { font-weight: 600; color: var(--text); }
+.team-summary-card .ts-value small { color: var(--text-faint); font-size: 10.5px; margin-left: 3px; }
+.team-summary-card .ts-goto {
+  align-self: flex-start; font-size: 11px; font-weight: 600; color: var(--orange);
+  padding: 5px 12px; border-radius: 999px; background: var(--orange-s);
+  border: 1px solid rgba(255,70,0,0.2); transition: background .15s;
+}
+.team-summary-card .ts-goto:hover { background: rgba(255,70,0,0.18); }
+.team-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.team-pill {
+  padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border-l);
+  background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-dim); transition: all .15s;
+}
+.team-pill:hover { border-color: var(--orange); color: var(--text); }
+.team-pill.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+.agency-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.agency-chip {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border-l);
+  background: var(--surface); font-size: 12.5px; font-weight: 600; color: var(--text-dim); transition: all .15s;
+}
+.agency-chip:hover { border-color: var(--orange); color: var(--text); }
+.agency-chip.active { background: var(--orange-s); border-color: var(--orange); color: var(--orange); }
+.agency-hint { font-size: 11.5px; color: var(--text-faint); margin-bottom: 8px; display: block; }
+.store-empty { padding: 50px 20px; text-align: center; color: var(--text-faint); font-size: 13px; border: 1px dashed var(--border-l); border-radius: var(--radius); background: var(--surface); }
+.store-panel { display: none; }
+.store-panel.visible { display: block; }
+table.store-table { width: 100%; border-collapse: collapse; min-width: 760px; background: var(--surface); }
+table.store-table th, table.store-table td { padding: 10px 13px; font-size: 12.5px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--border-l); color: var(--text); }
+table.store-table thead tr.metric-row th { font-weight: 600; font-size: 12.5px; background: var(--surface2); border-left: 1px solid var(--border-l); }
+table.store-table thead tr.metric-row th:first-child { border-left: none; }
+table.store-table thead tr.sub-row th { font-size: 10.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: .03em; border-left: 1px solid rgba(0,0,0,0.08); padding-top: 6px; padding-bottom: 6px; }
+table.store-table thead tr.sub-row th:first-child { border-left: none; }
+table.store-table td.store-name { text-align: left; font-weight: 600; }
+table.store-table td.metric-cell { border-left: 1px solid rgba(0,0,0,0.06); color: var(--text-dim); }
+table.store-table td.metric-cell.rate { font-weight: 600; color: var(--text); }
+table.store-table tbody tr:hover td { background: rgba(0,0,0,0.04); }
+.store-agency { display: block; font-size: 10.5px; color: var(--text-faint); margin-top: 1px; }
+
+/* ── WHOLESALE ── */
+.wholesale-head {
+  display: flex; align-items: center; gap: 14px; padding: 18px 22px;
+  border-radius: var(--radius); background: var(--surface);
+  border: 1px solid var(--border-l); border-left: 3px solid var(--orange); margin-bottom: 16px;
+}
+.wholesale-head .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); flex: 0 0 auto; }
+.wholesale-head h3 { font-weight: 700; font-size: 16px; color: var(--text); }
+.wholesale-head .desc { font-size: 12px; color: var(--text-faint); }
+.wholesale-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+@media (max-width: 900px) { .wholesale-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 500px) { .wholesale-grid { grid-template-columns: repeat(2, 1fr); } }
+.ws-card { padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ws-card .label { font-weight: 600; font-size: 12.5px; color: var(--text-dim); }
+.ws-card .value { font-weight: 700; font-size: 26px; letter-spacing: -0.02em; color: var(--text); }
+.ws-card .value small { font-weight: 600; font-size: 13px; color: var(--text-faint); margin-left: 2px; }
+.ws-card .ws-count { font-size: 11px; color: var(--text-faint); margin-top: -6px; }
+
+/* ── CASE ── */
+.case-section { margin-bottom: 24px; }
+.case-section-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid var(--border-l); border-bottom: none; background: var(--surface2);
+}
+.tag { font-size: 12.5px; font-weight: 700; padding: 5px 13px; border-radius: 999px; }
+.tag.excellent { background: var(--up-bg);   color: var(--up); }
+.tag.weak      { background: var(--down-bg); color: var(--down); }
+.tag.none      { background: #FFF8E1;        color: #E65100; }
+.case-criteria-small { font-size: 11.5px; color: var(--text-faint); }
+.case-total { margin-left: auto; font-size: 11.5px; color: var(--text-faint); }
+.case-team-wrap { border: 1px solid var(--border-l); border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; background: var(--surface); }
+.case-team-group { border-top: 1px solid rgba(0,0,0,0.08); }
+.case-team-group:first-child { border-top: none; }
+.case-team-group .ctg-head { display: flex; align-items: center; gap: 8px; padding: 9px 16px; background: var(--surface2); font-size: 12.5px; font-weight: 600; color: var(--text-dim); }
+.case-team-group .ctg-count { font-weight: 400; color: var(--text-faint); font-size: 11.5px; }
+.case-list { display: flex; flex-direction: column; }
+.case-list-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; font-size: 12.5px; border-top: 1px solid rgba(0,0,0,0.06); }
+.case-list-item:first-child { border-top: none; }
+.case-list-item .s-name { font-weight: 600; color: var(--text); }
+.case-list-item .s-metric { color: var(--text-faint); font-size: 11.5px; }
+.case-list-empty { padding: 14px 16px; font-size: 12px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="logo-area">
+    <span class="logo-dot"></span>
+    <span class="logo-text">서부마케팅담당 유선 실적 점검</span>
+  </div>
+  <div class="header-right">
+    <nav class="nav-links">
+      <a class="nav-link active" href="#tab1">주요지표</a>
+      <a class="nav-link" href="#tab2">조직별 현황</a>
+      <a class="nav-link" href="#tab3">소매채널</a>
+      <a class="nav-link" href="#tab4">도매채널</a>
+      <a class="nav-link" href="#tab5">상세분석</a>
+    </nav>
+    <span class="updated-badge" id="updatedAt">기준일 —</span>
+  </div>
+</header>
+
+<div class="tab-nav-wrap">
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="tab1"><span class="num">01</span>주요지표</button>
+    <button class="tab-btn" data-tab="tab2"><span class="num">02</span>조직별 현황</button>
+    <button class="tab-btn" data-tab="tab3"><span class="num">03</span>소매채널</button>
+    <button class="tab-btn" data-tab="tab4"><span class="num">04</span>도매채널</button>
+    <button class="tab-btn" data-tab="tab5"><span class="num">05</span>상세분석</button>
+  </nav>
+</div>
+
+<main class="main">
+  <section class="tab-panel active" id="tab1">
+    <div class="section-head">
+      <h2>서부마케팅담당 주요지표 요약</h2>
+      <span class="sub">목표 대비 실적 · 전월 동기 대비 · 2026-08-01 ~ 08-18</span>
+    </div>
+    <div id="insightTab1"></div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </section>
+
+  <section class="tab-panel" id="tab2">
+    <div class="section-head">
+      <h2>T only 조직별 실적 현황</h2>
+      <span class="sub">신규·개통 기준 / 서부 강조 표시 / 달성률 = 실적 ÷ 목표</span>
+    </div>
+    <div id="insightTab2"></div>
+    <div class="org-tables-stack">
+      <div class="table-scroll">
+        <table class="org-table" id="broadbandTable">
+          <caption>초고속 신규</caption>
+          <thead><tr><th>본부</th><th>목표</th><th>실적</th><th>잔여</th><th>일평균</th><th>달성률</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-scroll">
+        <table class="org-table" id="iptvTable">
+          <caption>IPTV 신규</caption>
+          <thead><tr><th>본부</th><th>목표</th><th>실적</th><th>잔여</th><th>일평균</th><th>달성률</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab3">
+    <div class="section-head">
+      <h2>서부 소매채널 핵심지표</h2>
+      <span class="sub">팀 요약 → 팀 선택 → 대리점 선택 → 매장 상세</span>
+    </div>
+    <div id="insightTab3"></div>
+    <div class="team-summary-grid" id="teamSummaryGrid"></div>
+    <div class="team-pills" id="teamPills"></div>
+    <span class="agency-hint" id="agencyHint">팀을 먼저 선택하세요</span>
+    <div class="agency-chips" id="agencyChips"></div>
+    <div class="store-empty" id="storeEmpty">팀과 대리점을 선택하면 소속 매장의 핵심지표가 표시됩니다.</div>
+    <div class="store-panel" id="storePanel">
+      <div class="table-scroll">
+        <table class="store-table" id="storeTable">
+          <thead>
+            <tr class="metric-row">
+              <th rowspan="2">매장</th>
+              <th colspan="3">가동률</th>
+              <th colspan="3">MNP 동판율</th>
+              <th colspan="3">유선 동판율</th>
+              <th colspan="3">기가 유치율</th>
+              <th colspan="3">1G 유치율</th>
+            </tr>
+            <tr class="sub-row">
+              <th>모수</th><th>자수</th><th>율</th>
+              <th>모수</th><th>자수</th><th>율</th>
+              <th>모수</th><th>자수</th><th>율</th>
+              <th>모수</th><th>자수</th><th>율</th>
+              <th>모수</th><th>자수</th><th>율</th>
+            </tr>
+          </thead>
+          <tbody id="storeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab4">
+    <div class="section-head">
+      <h2>서부 도매채널 핵심지표</h2>
+      <span class="sub">팀 구분 없는 단일 채널 · 전월 동기 대비 비교</span>
+    </div>
+    <div id="insightTab4"></div>
+    <div class="wholesale-head">
+      <span class="dot"></span>
+      <div>
+        <h3 id="wsName">서부도매(RS)</h3>
+        <div class="desc">서부마케팅담당 도매 채널 전체 실적 · 2026-08-01 ~ 08-18</div>
+      </div>
+    </div>
+    <div class="wholesale-grid" id="wholesaleGrid"></div>
+  </section>
+
+  <section class="tab-panel" id="tab5">
+    <div class="section-head">
+      <h2>소매채널 상세 분석</h2>
+      <span class="sub">Case별 → 팀별 매장 리스트</span>
+    </div>
+    <div id="insightTab5"></div>
+    <div id="detailBlocks"></div>
+  </section>
+</main>
+
+<script>
+/* ════════════════════════════════════════════
+   DASHBOARD_DATA  —  2026-08-01 ~ 08-18
+   ════════════════════════════════════════════ */
+const DASHBOARD_DATA = {
+  updatedAt: "기준일 2026-08-18",
+
+  /* ── AI Insight: 단순 수치 나열, 우열 판단 표현 제거 ── */
+  insights: {
+    tab1: [
+      "서부 초고속 달성률 69.8% (실적 890건 / 목표 1,276건) — 잔여 9.8일 기준 일평균 39.4건 필요",
+      "서부 IPTV 달성률 66.4% (실적 867건 / 목표 1,305건) — 잔여 일수 내 일평균 44.7건 필요",
+      "소매 매장 가동률 50.3% — 등록 326매장 중 164매장 1건 이상 개통",
+      "소매 MNP 동판율 12.6% — 모수(소매 MNP 신규) 936건, 자수 118건",
+      "도매 MNP 동판율 9.6% — 모수(도매 MNP 신규) 2,766건, 자수 266건 / 전월 동기 대비 +0.8%p"
+    ],
+    tab2: [
+      "서부 초고속 달성률 69.8% (890건 / 목표 1,276건) — 기대진행률 55.5% 대비 현재 진행 수준",
+      "서부 IPTV 달성률 66.4% (867건 / 목표 1,305건)",
+      "잔여 9.8일 기준 일평균 목표 달성 여부 지속 모니터링 필요"
+    ],
+    tab3: [
+      "동광주 가동률 46.1% (115매장 중 53매장) · MNP 동판율 15.6% (288건 중 45건)",
+      "서광주 가동률 50.9% (108매장 중 55매장) · MNP 동판율 8.6% (304건 중 26건)",
+      "전북 가동률 63.1% (65매장 중 41매장) · MNP 동판율 12.0% (249건 중 30건)",
+      "제주 가동률 39.5% (38매장 중 15매장) · MNP 동판율 17.9% (95건 중 17건)",
+      "유선 동판율(초고속 신규 대비 IPTV 동시 개통): 동광주 37.5% · 서광주 32.3% · 전북 35.0% · 제주 42.4%"
+    ],
+    tab4: [
+      "도매 가동률 39.9% — 등록 353판매점 중 141판매점",
+      "도매 유선 동판율 80.7% — 도매 초고속 신규 368건 중 297건 IPTV 동시 개통",
+      "도매 MNP 동판율 9.6% — 도매 MNP 신규 2,766건 중 266건 / 전월 동기 대비 +0.8%p",
+      "도매 기가 유치율 99.2% — 368건 중 365건",
+      "도매 1G 이상 유치율 28.5% — 368건 중 105건"
+    ],
+    tab5: [
+      "가동률 우수(H/S 20건↑, 초고속 유치율 15%↑): 동광주 4개 · 서광주 4개 · 전북 4개 · 제주 1개 — 총 13개 매장",
+      "HS대비 유선 부진(H/S 50건↑, 초고속 유치율 4%↓): 동광주 5개 · 서광주 2개 · 전북 0개 · 제주 4개 — 총 11개 매장",
+      "3개월 초고속 실적 無(H/S 20건↑): 동광주 1개 · 서광주 3개 · 전북 1개 · 제주 2개 — 총 7개 매장"
+    ]
+  },
+
+  kpis: [
+    {
+      name: "초고속 신규", target: 1276, actual: 890, unit: "건",
+      rate: 69.8, momP: -3.2,
+      reviewPoints: [
+        "소매 522건 + 도매 368건 합산",
+        "잔여 9.8일 · 일평균 39.4건 필요",
+        "전월 동기(7/1~7/18) 대비 -3.2%p"
+      ]
+    },
+    {
+      name: "IPTV 신규", target: 1305, actual: 867, unit: "건",
+      rate: 66.4, momP: -1.8,
+      reviewPoints: [
+        "소매 187건 + 도매 680건 합산",
+        "잔여 일수 내 일평균 44.7건 필요",
+        "전월 동기 대비 -1.8%p"
+      ]
+    },
+    {
+      name: "1G 유치율(소매)", target: 60.0, actual: 47.7, unit: "%",
+      rate: 79.5, momP: -2.1,
+      reviewPoints: [
+        "소매 초고속 522건 중 1G 이상 249건",
+        "동광주 38.6% · 서광주 47.0% · 전북 48.8% · 제주 74.6%",
+        "전월 동기 대비 -2.1%p"
+      ]
+    },
+    {
+      name: "소매 매장 가동률", target: 60.0, actual: 50.3, unit: "%",
+      rate: 83.8, momP: -1.4,
+      reviewPoints: [
+        "등록 326매장 중 164매장 1건 이상 개통",
+        "동광주 46.1% · 서광주 50.9% · 전북 63.1% · 제주 39.5%",
+        "전월 동기 대비 -1.4%p"
+      ]
+    },
+    {
+      name: "MNP 동판율(소매)", target: 15.0, actual: 12.6, unit: "%",
+      rate: 84.0, momP: -1.8,
+      reviewPoints: [
+        "모수: 소매 MNP 신규 936건",
+        "자수: 유선 동시 개통 118건",
+        "전월 동기 대비 -1.8%p"
+      ]
+    },
+    {
+      name: "MNP 동판율(도매)", target: 15.0, actual: 9.6, unit: "%",
+      rate: 64.0, momP: 0.8,
+      reviewPoints: [
+        "모수: 도매 MNP 신규 2,766건 (서부도매 채널 기준)",
+        "자수: 유선 동시 개통 266건",
+        "전월 동기 대비 +0.8%p"
+      ]
+    }
+  ],
+
+  org: {
+    broadband: [
+      { name: "수도권", target: 5927, actual: 3998, dailyAvg: 328 },
+      { name: "부산",   target: 1987, actual: 1474, dailyAvg: 121 },
+      { name: "대구",   target: 1132, actual:  905, dailyAvg:  74 },
+      { name: "서부",   target: 1276, actual:  890, dailyAvg:  73, highlight: true },
+      { name: "중부",   target: 1063, actual:  854, dailyAvg:  70 },
+      { name: "유통",   target: 2616, actual: 1755, dailyAvg: 144 }
+    ],
+    iptv: [
+      { name: "수도권", target: 6290, actual: 4408, dailyAvg: 361 },
+      { name: "부산",   target: 2018, actual: 1634, dailyAvg: 134 },
+      { name: "대구",   target: 1207, actual: 1066, dailyAvg:  87 },
+      { name: "서부",   target: 1305, actual:  867, dailyAvg:  71, highlight: true },
+      { name: "중부",   target: 1041, actual:  825, dailyAvg:  68 },
+      { name: "유통",   target: 2638, actual: 1813, dailyAvg: 149 }
+    ]
+  },
+
+  /* ── 소매채널
+     모수 정의:
+     · 가동률     모수 = 이동전화 H/S 1건 이상 매장 수
+     · MNP 동판율 모수 = 소매 MNP 신규 건수
+     · 유선 동판율 모수 = 초고속 신규 건수 (초고속 신규 중 IPTV 동시 개통 비율)
+     · 기가/1G 유치율 모수 = 초고속 신규 건수
+  ── */
+  retail: {
+    teams: [
+      {
+        name: "동광주",
+        summary: {
+          op:   { base: 115, cur:  53, rate: 46.1 },
+          mnp:  { base: 288, cur:  45, rate: 15.6 },
+          wire: { base: 176, cur:  66, rate: 37.5 },
+          giga: { base: 176, cur: 162, rate: 92.0 },
+          g1:   { base: 176, cur:  68, rate: 38.6 }
+        },
+        agencies: [
+          { name: "가온대리점", stores: [
+            { name: "가온대리점 본점",   m: { op:{base:24,cur:1,rate:4.2},  mnp:{base:3,cur:1,rate:33.3},  wire:{base:2,cur:1,rate:50.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "가온대리점 월곡점", m: { op:{base:28,cur:1,rate:3.6},  mnp:{base:3,cur:1,rate:33.3},  wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]},
+          { name: "고흥대리점", stores: [
+            { name: "고흥대리점 고흥본점",   m: { op:{base:35,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "고흥대리점 고흥중앙점", m: { op:{base:9,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "고흥대리점 고흥채움점", m: { op:{base:30,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "고흥대리점 녹동점",     m: { op:{base:17,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "고흥대리점 녹동조은점", m: { op:{base:12,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "고흥대리점 녹동희망점", m: { op:{base:40,cur:1,rate:2.5}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:0,rate:0.0}, g1:{base:1,cur:0,rate:0.0} } },
+            { name: "고흥대리점 행운점",     m: { op:{base:7,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "광주대리점", stores: [
+            { name: "광주대리점 삼각점", m: { op:{base:27,cur:1,rate:3.7}, mnp:{base:2,cur:2,rate:100.0}, wire:{base:2,cur:2,rate:100.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:2,rate:100.0} } }
+          ]},
+          { name: "광주모바일대리점", stores: [
+            { name: "광주모바일대리점 본점",     m: { op:{base:54,cur:1,rate:1.9}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:5,cur:0,rate:0.0}, giga:{base:5,cur:4,rate:80.0}, g1:{base:5,cur:0,rate:0.0} } },
+            { name: "광주모바일대리점 우체국점", m: { op:{base:17,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "광주상무대리점", stores: [
+            { name: "광주상무대리점 본점", m: { op:{base:23,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "광주서림대리점", stores: [
+            { name: "광주서림대리점 임동점", m: { op:{base:40,cur:1,rate:2.5}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:2,rate:100.0} } }
+          ]},
+          { name: "광주중앙대리점", stores: [
+            { name: "광주중앙대리점 백운점", m: { op:{base:9,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "광주패밀리대리점", stores: [
+            { name: "광주패밀리대리점 금호점", m: { op:{base:3,cur:0,rate:0.0},  mnp:{base:7,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "광주패밀리대리점 본점",   m: { op:{base:22,cur:1,rate:4.5}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:4,cur:0,rate:0.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0} } },
+            { name: "광주패밀리대리점 운암점", m: { op:{base:20,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "나은대리점", stores: [
+            { name: "나은대리점 구례1호점",    m: { op:{base:32,cur:1,rate:3.1},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},   giga:{base:1,cur:0,rate:0.0},   g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 구례2호점",    m: { op:{base:11,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 국동점",       m: { op:{base:20,cur:1,rate:5.0},  mnp:{base:2,cur:1,rate:50.0},  wire:{base:3,cur:1,rate:33.3},  giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:2,rate:66.7}  } },
+            { name: "나은대리점 금당2호점",    m: { op:{base:24,cur:1,rate:4.2},  mnp:{base:4,cur:0,rate:0.0},   wire:{base:11,cur:1,rate:9.1},  giga:{base:11,cur:11,rate:100.0},g1:{base:11,cur:2,rate:18.2} } },
+            { name: "나은대리점 금당점",       m: { op:{base:28,cur:1,rate:3.6},  mnp:{base:1,cur:1,rate:100.0}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 돌고개역점",   m: { op:{base:7,cur:0,rate:0.0},   mnp:{base:1,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},   giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 마동점",       m: { op:{base:52,cur:1,rate:1.9},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},   giga:{base:1,cur:0,rate:0.0},   g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 무등점",       m: { op:{base:27,cur:1,rate:3.7},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:3,cur:0,rate:0.0},   giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:0,rate:0.0}   } },
+            { name: "나은대리점 무선점",       m: { op:{base:29,cur:0,rate:0.0},  mnp:{base:5,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 문흥점",       m: { op:{base:30,cur:0,rate:0.0},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 미평점",       m: { op:{base:12,cur:0,rate:0.0},  mnp:{base:0,cur:1,rate:0.0},   wire:{base:2,cur:1,rate:50.0},  giga:{base:2,cur:1,rate:50.0},  g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "나은대리점 본점",         m: { op:{base:84,cur:1,rate:1.2},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:4,cur:0,rate:0.0},   giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:3,rate:75.0}  } },
+            { name: "나은대리점 상무점",       m: { op:{base:7,cur:0,rate:0.0},   mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 수완점",       m: { op:{base:30,cur:1,rate:3.3},  mnp:{base:4,cur:1,rate:25.0},  wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 순천중앙점",   m: { op:{base:19,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 신대점",       m: { op:{base:11,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 신대타운점",   m: { op:{base:48,cur:1,rate:2.1},  mnp:{base:4,cur:1,rate:25.0},  wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "나은대리점 여서직영점",   m: { op:{base:26,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 연향2호점",    m: { op:{base:34,cur:1,rate:2.9},  mnp:{base:4,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},   giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "나은대리점 연향3호점",    m: { op:{base:24,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 연향점",       m: { op:{base:12,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 오천점",       m: { op:{base:22,cur:1,rate:4.5},  mnp:{base:4,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},   giga:{base:2,cur:1,rate:50.0},  g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "나은대리점 왕지점",       m: { op:{base:66,cur:1,rate:1.5},  mnp:{base:4,cur:1,rate:25.0},  wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 용당점",       m: { op:{base:10,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 웅천점",       m: { op:{base:44,cur:1,rate:2.3},  mnp:{base:5,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},   giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 죽림점",       m: { op:{base:40,cur:1,rate:2.5},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},   giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "나은대리점 중동 시청점",  m: { op:{base:48,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 중마점",       m: { op:{base:103,cur:1,rate:1.0}, mnp:{base:13,cur:2,rate:15.4}, wire:{base:5,cur:2,rate:40.0},  giga:{base:5,cur:5,rate:100.0}, g1:{base:5,cur:2,rate:40.0}  } },
+            { name: "나은대리점 중마２호점",   m: { op:{base:32,cur:0,rate:0.0},  mnp:{base:4,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 중앙3호점",    m: { op:{base:34,cur:1,rate:2.9},  mnp:{base:1,cur:1,rate:100.0}, wire:{base:3,cur:1,rate:33.3},  giga:{base:3,cur:2,rate:66.7},  g1:{base:3,cur:2,rate:66.7}  } },
+            { name: "나은대리점 창덕점",       m: { op:{base:33,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 치평점",       m: { op:{base:12,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 칠성점",       m: { op:{base:19,cur:1,rate:5.3},  mnp:{base:1,cur:1,rate:100.0}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "나은대리점 터미널점",     m: { op:{base:8,cur:0,rate:0.0},   mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "나은대리점 학동점",       m: { op:{base:23,cur:1,rate:4.3},  mnp:{base:0,cur:1,rate:0.0},   wire:{base:2,cur:1,rate:50.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "나은대리점 화정점",       m: { op:{base:13,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "대광대리점", stores: [
+            { name: "대광대리점 계림점",     m: { op:{base:59,cur:1,rate:1.7},  mnp:{base:7,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:1,rate:50.0},  g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "대광대리점 광산점",     m: { op:{base:30,cur:1,rate:3.3},  mnp:{base:3,cur:1,rate:33.3},  wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:0,rate:0.0}   } },
+            { name: "대광대리점 봉선점",     m: { op:{base:108,cur:1,rate:0.9}, mnp:{base:11,cur:3,rate:27.3}, wire:{base:6,cur:3,rate:50.0}, giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:4,rate:66.7}  } },
+            { name: "대광대리점 양산점",     m: { op:{base:21,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "대광대리점 양산중앙점", m: { op:{base:15,cur:0,rate:0.0},  mnp:{base:2,cur:1,rate:50.0},  wire:{base:1,cur:1,rate:100.0},giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "대광대리점 운남점",     m: { op:{base:33,cur:1,rate:3.0},  mnp:{base:3,cur:1,rate:33.3},  wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0}  } },
+            { name: "대광대리점 학동점",     m: { op:{base:7,cur:0,rate:0.0},   mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "대광대리점 화정점",     m: { op:{base:23,cur:1,rate:4.3},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } }
+          ]},
+          { name: "도움대리점", stores: [
+            { name: "도움대리점 본점", m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "럭키대리점", stores: [
+            { name: "럭키대리점 본점", m: { op:{base:18,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "마루대리점", stores: [
+            { name: "마루대리점 쌍촌점",         m: { op:{base:5,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "마루대리점 장덕프리미엄점", m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:1,cur:1,rate:100.0}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "마루대리점 충장1가점",      m: { op:{base:35,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},   giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "보성전자마트대리점", stores: [
+            { name: "보성전자마트대리점 보성점", m: { op:{base:20,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "봉화대리점", stores: [
+            { name: "봉화대리점 금당점",       m: { op:{base:11,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "봉화대리점 벌교역점",     m: { op:{base:58,cur:1,rate:1.7},  mnp:{base:10,cur:0,rate:0.0},  wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:1,rate:50.0},  g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "봉화대리점 벌교우체국점", m: { op:{base:21,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "봉화대리점 연향1호점",    m: { op:{base:110,cur:1,rate:0.9}, mnp:{base:12,cur:4,rate:33.3}, wire:{base:7,cur:4,rate:57.1}, giga:{base:7,cur:7,rate:100.0}, g1:{base:7,cur:4,rate:57.1}  } },
+            { name: "봉화대리점 중마2호점",    m: { op:{base:25,cur:1,rate:4.0},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "봉화대리점 중마점",       m: { op:{base:35,cur:1,rate:2.9},  mnp:{base:4,cur:2,rate:50.0},  wire:{base:4,cur:2,rate:50.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:3,rate:75.0}  } },
+            { name: "봉화대리점 중앙점",       m: { op:{base:29,cur:1,rate:3.4},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:1,rate:50.0},  g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "봉화대리점 화정점",       m: { op:{base:16,cur:0,rate:0.0},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "선우대리점", stores: [
+            { name: "선우대리점 본점", m: { op:{base:2,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "성원대리점", stores: [
+            { name: "성원대리점 본점", m: { op:{base:8,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "스카이대리점", stores: [
+            { name: "스카이대리점 두암점",    m: { op:{base:20,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}  } },
+            { name: "스카이대리점 봉선점",    m: { op:{base:62,cur:1,rate:1.6}, mnp:{base:3,cur:2,rate:66.7},  wire:{base:4,cur:2,rate:50.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0} } },
+            { name: "스카이대리점 송정점",    m: { op:{base:11,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}  } },
+            { name: "스카이대리점 신가3호점", m: { op:{base:60,cur:1,rate:1.7}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:6,cur:0,rate:0.0},  giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:3,rate:50.0} } },
+            { name: "스카이대리점 운남점",    m: { op:{base:32,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}  } },
+            { name: "스카이대리점 풍암점",    m: { op:{base:51,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}  } }
+          ]},
+          { name: "여천신기대리점", stores: [
+            { name: "여천신기대리점 본점", m: { op:{base:46,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "오치대리점", stores: [
+            { name: "오치대리점 본점", m: { op:{base:42,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "와이티대리점", stores: [
+            { name: "와이티대리점 본점", m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:0,cur:1,rate:0.0}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "우리대리점", stores: [
+            { name: "우리대리점 교동프리미엄점", m: { op:{base:71,cur:1,rate:1.4}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:6,cur:0,rate:0.0},  giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:3,rate:50.0}  } },
+            { name: "우리대리점 본점",           m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:3,cur:1,rate:33.3},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "우리대리점 여서2호점",      m: { op:{base:18,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "우리대리점 연향점",         m: { op:{base:16,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "우리대리점 중앙점",         m: { op:{base:65,cur:1,rate:1.5}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:8,cur:0,rate:0.0},  giga:{base:8,cur:8,rate:100.0}, g1:{base:8,cur:3,rate:37.5}  } }
+          ]},
+          { name: "우솔대리점", stores: [
+            { name: "우솔대리점 본점", m: { op:{base:43,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "유한회사 한빛정보", stores: [
+            { name: "유한회사 한빛정보 삼산광양점",  m: { op:{base:32,cur:1,rate:3.1}, mnp:{base:5,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "유한회사 한빛정보 삼산본점",    m: { op:{base:6,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "유한회사 한빛정보 순천 본점",   m: { op:{base:30,cur:1,rate:3.3}, mnp:{base:9,cur:1,rate:11.1},  wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:1,rate:25.0}  } },
+            { name: "유한회사 한빛정보 순천 왕지점", m: { op:{base:20,cur:1,rate:5.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:3,cur:0,rate:0.0},  giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:0,rate:0.0}   } },
+            { name: "유한회사 한빛정보 순천오천점",  m: { op:{base:19,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "유한회사 한빛정보 이수본점",    m: { op:{base:22,cur:1,rate:4.5}, mnp:{base:3,cur:2,rate:66.7},  wire:{base:3,cur:2,rate:66.7}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:0,rate:0.0}   } }
+          ]},
+          { name: "장천대리점", stores: [
+            { name: "장천대리점 광양점", m: { op:{base:11,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "전남곡성대리점", stores: [] },
+          { name: "화순대리점",     stores: [] }
+        ]
+      },
+      {
+        name: "서광주",
+        summary: {
+          op:   { base: 108, cur:  55, rate: 50.9 },
+          mnp:  { base: 304, cur:  26, rate:  8.6 },
+          wire: { base: 164, cur:  53, rate: 32.3 },
+          giga: { base: 164, cur: 153, rate: 93.3 },
+          g1:   { base: 164, cur:  77, rate: 47.0 }
+        },
+        agencies: [
+          { name: "광주 E&T", stores: [
+            { name: "광주 E&T대리점 일곡점", m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주 E&T대리점 화정점", m: { op:{base:28,cur:1,rate:3.6}, mnp:{base:1,cur:1,rate:100.0}, wire:{base:1,cur:1,rate:100.0},giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } }
+          ]},
+          { name: "광주대동대리점", stores: [
+            { name: "광주대동대리점 운림점", m: { op:{base:18,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "광주백산대리점", stores: [
+            { name: "광주백산대리점 본점",       m: { op:{base:11,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주백산대리점 수완점",     m: { op:{base:52,cur:1,rate:1.9}, mnp:{base:4,cur:1,rate:25.0},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "광주백산대리점 화순시장점", m: { op:{base:16,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주백산대리점 화순점",     m: { op:{base:21,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "광주인천상사대리점", stores: [
+            { name: "광주인천상사대리점 1가점",     m: { op:{base:39,cur:1,rate:2.6}, mnp:{base:8,cur:0,rate:0.0},   wire:{base:4,cur:0,rate:0.0},  giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0}  } },
+            { name: "광주인천상사대리점 두암점",    m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "광주인천상사대리점 본점",      m: { op:{base:25,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주인천상사대리점 송정점",    m: { op:{base:19,cur:1,rate:5.3}, mnp:{base:6,cur:1,rate:16.7},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "광주인천상사대리점 수완점",    m: { op:{base:24,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주인천상사대리점 염주점",    m: { op:{base:47,cur:1,rate:2.1}, mnp:{base:9,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "광주인천상사대리점 전대후문점",m: { op:{base:27,cur:1,rate:3.7}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "광주인천상사대리점 주월점",    m: { op:{base:26,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주인천상사대리점 첨단2호점", m: { op:{base:31,cur:1,rate:3.2}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "광주인천상사대리점 첨단3호점", m: { op:{base:12,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "광주인천상사대리점 첨단점",    m: { op:{base:25,cur:1,rate:4.0}, mnp:{base:3,cur:1,rate:33.3},  wire:{base:5,cur:1,rate:20.0}, giga:{base:5,cur:5,rate:100.0}, g1:{base:5,cur:3,rate:60.0}  } },
+            { name: "광주인천상사대리점 화정점",    m: { op:{base:37,cur:1,rate:2.7}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } }
+          ]},
+          { name: "그린대리점", stores: [
+            { name: "그린대리점 본점",   m: { op:{base:16,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "그린대리점 장흥점", m: { op:{base:32,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "남선대리점", stores: [
+            { name: "남선대리점 금호운천로점",    m: { op:{base:16,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "남선대리점 금호점",          m: { op:{base:26,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "남선대리점 문흥점",          m: { op:{base:18,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "남선대리점 장성점",          m: { op:{base:21,cur:1,rate:4.8}, mnp:{base:4,cur:1,rate:25.0},  wire:{base:1,cur:1,rate:100.0},giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "남선대리점 진월점",          m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "남선대리점 진월프리미엄점",  m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:4,cur:0,rate:0.0},  giga:{base:4,cur:3,rate:75.0},  g1:{base:4,cur:0,rate:0.0}   } },
+            { name: "남선대리점 첨단점",          m: { op:{base:48,cur:1,rate:2.1}, mnp:{base:5,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "남선대리점 풍암 프리미엄점", m: { op:{base:17,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "남선대리점 풍암점",          m: { op:{base:29,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "남선대리점 학동점",          m: { op:{base:55,cur:1,rate:1.8}, mnp:{base:1,cur:1,rate:100.0}, wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:1,rate:33.3}  } },
+            { name: "남선대리점 화순광덕점",      m: { op:{base:77,cur:1,rate:1.3}, mnp:{base:22,cur:2,rate:9.1},  wire:{base:8,cur:2,rate:25.0}, giga:{base:8,cur:8,rate:100.0}, g1:{base:8,cur:3,rate:37.5}  } }
+          ]},
+          { name: "다린컴즈대리점", stores: [
+            { name: "다린컴즈대리점 담양점",    m: { op:{base:28,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "다린컴즈대리점 매곡점",    m: { op:{base:21,cur:1,rate:4.8}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "다린컴즈대리점 비엔날레점",m: { op:{base:18,cur:1,rate:5.6}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:4,cur:0,rate:0.0},  giga:{base:4,cur:3,rate:75.0},  g1:{base:4,cur:1,rate:25.0}  } },
+            { name: "다린컴즈대리점 선운점",    m: { op:{base:20,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "다린컴즈대리점 소망점",    m: { op:{base:7,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "다린컴즈대리점 신창점",    m: { op:{base:21,cur:1,rate:4.8}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "다린컴즈대리점 연제점",    m: { op:{base:33,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "다린컴즈대리점 염주점",    m: { op:{base:13,cur:1,rate:7.7}, mnp:{base:1,cur:1,rate:100.0}, wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:2,rate:100.0} } },
+            { name: "다린컴즈대리점 장성점",    m: { op:{base:6,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "대산대리점", stores: [
+            { name: "대산대리점 본점",   m: { op:{base:17,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "대산대리점 장흥점", m: { op:{base:6,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "대성대리점", stores: [
+            { name: "대성대리점 본점", m: { op:{base:23,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "디지털대리점", stores: [
+            { name: "디지털대리점 영암본점", m: { op:{base:36,cur:1,rate:2.8}, mnp:{base:6,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "디지털대리점 영암점",   m: { op:{base:15,cur:1,rate:6.7}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]},
+          { name: "무등대리점", stores: [
+            { name: "무등대리점 금호프리미엄점", m: { op:{base:72,cur:1,rate:1.4}, mnp:{base:3,cur:1,rate:33.3},  wire:{base:6,cur:1,rate:16.7}, giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:5,rate:83.3}  } },
+            { name: "무등대리점 두암점",         m: { op:{base:52,cur:1,rate:1.9}, mnp:{base:11,cur:1,rate:9.1},  wire:{base:5,cur:1,rate:20.0}, giga:{base:5,cur:5,rate:100.0}, g1:{base:5,cur:2,rate:40.0}  } },
+            { name: "무등대리점 버들마을점",     m: { op:{base:20,cur:1,rate:5.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "무등대리점 주월프리미엄점", m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "무안대리점", stores: [
+            { name: "무안대리점 남평점", m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "무안대리점 본점",   m: { op:{base:60,cur:1,rate:1.7}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:3,cur:0,rate:0.0}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:3,rate:100.0} } }
+          ]},
+          { name: "베스트대리점", stores: [
+            { name: "베스트대리점 매곡점",     m: { op:{base:5,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "베스트대리점 백운점",     m: { op:{base:12,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "베스트대리점 본점(본점)", m: { op:{base:50,cur:1,rate:2.0}, mnp:{base:2,cur:2,rate:100.0}, wire:{base:8,cur:2,rate:25.0}, giga:{base:8,cur:8,rate:100.0}, g1:{base:8,cur:3,rate:37.5}  } }
+          ]},
+          { name: "벧엘대리점", stores: [
+            { name: "벧엘대리점 본점", m: { op:{base:30,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "선영대리점", stores: [
+            { name: "선영대리점 비치점", m: { op:{base:19,cur:1,rate:5.3}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } },
+            { name: "선영대리점 연산점", m: { op:{base:12,cur:1,rate:8.3}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } },
+            { name: "선영대리점 옥암점", m: { op:{base:20,cur:1,rate:5.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0} } },
+            { name: "선영대리점 장흥점", m: { op:{base:11,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "신목포대리점", stores: [
+            { name: "신목포대리점 석현본점", m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:7,cur:0,rate:0.0}, wire:{base:3,cur:0,rate:0.0}, giga:{base:3,cur:1,rate:33.3}, g1:{base:3,cur:1,rate:33.3} } }
+          ]},
+          { name: "엠코리아", stores: [
+            { name: "엠코리아대리점 봉선점", m: { op:{base:11,cur:1,rate:9.1}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "엠코리아대리점 쌍촌점", m: { op:{base:28,cur:1,rate:3.6}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:5,cur:0,rate:0.0}, giga:{base:5,cur:3,rate:60.0},  g1:{base:5,cur:0,rate:0.0}  } }
+          ]},
+          { name: "영인대리점", stores: [
+            { name: "영인대리점 본점",   m: { op:{base:25,cur:1,rate:4.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "영인대리점 북항점", m: { op:{base:23,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "영인대리점 석현점", m: { op:{base:11,cur:1,rate:9.1}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "영인대리점 하당점", m: { op:{base:31,cur:1,rate:3.2}, mnp:{base:7,cur:0,rate:0.0}, wire:{base:3,cur:0,rate:0.0}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:2,rate:66.7}  } }
+          ]},
+          { name: "옥주대리점", stores: [
+            { name: "옥주대리점 본점", m: { op:{base:27,cur:1,rate:3.7}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:0,rate:0.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "우성대리점", stores: [
+            { name: "우성대리점 강진프리미엄점", m: { op:{base:32,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0},  wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "우성대리점 남악도청점",     m: { op:{base:31,cur:1,rate:3.2}, mnp:{base:2,cur:0,rate:0.0},  wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "우성대리점 대성점",         m: { op:{base:24,cur:1,rate:4.2}, mnp:{base:9,cur:1,rate:11.1}, wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:3,rate:100.0} } },
+            { name: "우성대리점 본점",           m: { op:{base:56,cur:1,rate:1.8}, mnp:{base:8,cur:1,rate:12.5}, wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:1,rate:33.3}  } },
+            { name: "우성대리점 삼호 본점",      m: { op:{base:18,cur:1,rate:5.6}, mnp:{base:1,cur:0,rate:0.0},  wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } }
+          ]},
+          { name: "월드대리점", stores: [
+            { name: "월드대리점 본점", m: { op:{base:38,cur:1,rate:2.6}, mnp:{base:5,cur:1,rate:20.0}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "유성대리점", stores: [
+            { name: "유성대리점 무안점",   m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "유성대리점 월야점",   m: { op:{base:22,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "유성대리점 함평본점", m: { op:{base:61,cur:1,rate:1.6}, mnp:{base:7,cur:1,rate:14.3},  wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:3,rate:75.0}  } },
+            { name: "유성대리점 해제점",   m: { op:{base:18,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "전남목포대리점", stores: [
+            { name: "전남목포대리점 남악점", m: { op:{base:25,cur:1,rate:4.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "전남서해대리점", stores: [
+            { name: "전남서해대리점 나주본점",    m: { op:{base:28,cur:1,rate:3.6}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "전남서해대리점 남악본점",    m: { op:{base:56,cur:1,rate:1.8}, mnp:{base:6,cur:1,rate:16.7},  wire:{base:5,cur:1,rate:20.0}, giga:{base:5,cur:5,rate:100.0}, g1:{base:5,cur:4,rate:80.0}  } },
+            { name: "전남서해대리점 배사랑점",    m: { op:{base:34,cur:1,rate:2.9}, mnp:{base:3,cur:2,rate:66.7},  wire:{base:5,cur:2,rate:40.0}, giga:{base:5,cur:3,rate:60.0},  g1:{base:5,cur:3,rate:60.0}  } },
+            { name: "전남서해대리점 백련본점",    m: { op:{base:66,cur:1,rate:1.5}, mnp:{base:8,cur:1,rate:12.5},  wire:{base:6,cur:1,rate:16.7}, giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:5,rate:83.3}  } },
+            { name: "전남서해대리점 빛가람점",    m: { op:{base:37,cur:1,rate:2.7}, mnp:{base:1,cur:1,rate:100.0}, wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:3,rate:75.0},  g1:{base:4,cur:1,rate:25.0}  } },
+            { name: "전남서해대리점 영산포점",    m: { op:{base:46,cur:1,rate:2.2}, mnp:{base:3,cur:1,rate:33.3},  wire:{base:5,cur:1,rate:20.0}, giga:{base:5,cur:4,rate:80.0},  g1:{base:5,cur:3,rate:60.0}  } },
+            { name: "전남서해대리점 오룡본점",    m: { op:{base:29,cur:1,rate:3.4}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:3,cur:0,rate:0.0},  giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:3,rate:100.0} } },
+            { name: "전남서해대리점 완도본점",    m: { op:{base:49,cur:1,rate:2.0}, mnp:{base:4,cur:1,rate:25.0},  wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0}  } },
+            { name: "전남서해대리점 카페본점",    m: { op:{base:26,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "전남서해대리점 터미널점",    m: { op:{base:44,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "전남서해대리점 평화광장점",  m: { op:{base:16,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "전남서해대리점 프리미엄점",  m: { op:{base:48,cur:1,rate:2.1}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:3,cur:0,rate:0.0},  giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:1,rate:33.3}  } },
+            { name: "전남서해대리점 하당점",      m: { op:{base:42,cur:1,rate:2.4}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:4,cur:0,rate:0.0},  giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0}  } },
+            { name: "전남서해대리점 함평본점",    m: { op:{base:44,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "전남영광대리점", stores: [
+            { name: "전남영광대리점 본점", m: { op:{base:43,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "주도대리점", stores: [
+            { name: "주도대리점 완도점", m: { op:{base:31,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "태경대리점", stores: [
+            { name: "태경대리점 완도김수현점", m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "태경대리점 진도점",       m: { op:{base:20,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "태경대리점 해남본점",     m: { op:{base:68,cur:0,rate:0.0}, mnp:{base:9,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "태주대리점", stores: [
+            { name: "태주대리점 2호광장점", m: { op:{base:34,cur:1,rate:2.9}, mnp:{base:8,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0} } },
+            { name: "태주대리점 남악점",     m: { op:{base:13,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "티원대리점",     stores: [] },
+          { name: "한국정보대리점", stores: [] }
+        ]
+      },
+      {
+        name: "전북",
+        summary: {
+          op:   { base:  65, cur:  41, rate: 63.1 },
+          mnp:  { base: 249, cur:  30, rate: 12.0 },
+          wire: { base: 123, cur:  43, rate: 35.0 },
+          giga: { base: 123, cur: 122, rate: 99.2 },
+          g1:   { base: 123, cur:  60, rate: 48.8 }
+        },
+        agencies: [
+          { name: "군산진포대리점", stores: [
+            { name: "군산진포대리점 군산대점", m: { op:{base:30,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "군산진포대리점 나운점",   m: { op:{base:46,cur:1,rate:2.2}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:3,cur:0,rate:0.0}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:2,rate:66.7}  } },
+            { name: "군산진포대리점 미원점",   m: { op:{base:9,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "군산진포대리점 우리점",   m: { op:{base:33,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "군산진포대리점 희망점",   m: { op:{base:53,cur:1,rate:1.9}, mnp:{base:6,cur:0,rate:0.0}, wire:{base:3,cur:0,rate:0.0}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:0,rate:0.0}   } }
+          ]},
+          { name: "김제중앙대리점", stores: [
+            { name: "김제중앙대리점 본점", m: { op:{base:12,cur:1,rate:8.3}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "남전주대리점", stores: [
+            { name: "남전주대리점 본점", m: { op:{base:18,cur:1,rate:5.6}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]},
+          { name: "더 대리점", stores: [
+            { name: "더 대리점 동산점",       m: { op:{base:29,cur:1,rate:3.4}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "더 대리점 삼례점",       m: { op:{base:19,cur:1,rate:5.3}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "더 대리점 서신점",       m: { op:{base:20,cur:1,rate:5.0}, mnp:{base:6,cur:0,rate:0.0},   wire:{base:4,cur:0,rate:0.0},  giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0}  } },
+            { name: "더 대리점 송천점",       m: { op:{base:14,cur:1,rate:7.1}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:2,rate:100.0} } },
+            { name: "더 대리점 아중점",       m: { op:{base:30,cur:1,rate:3.3}, mnp:{base:4,cur:1,rate:25.0},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "더 대리점 평화점",       m: { op:{base:5,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "더 대리점 평화코오롱점", m: { op:{base:20,cur:1,rate:5.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } }
+          ]},
+          { name: "동산대리점", stores: [
+            { name: "동산대리점 본점", m: { op:{base:19,cur:1,rate:5.3}, mnp:{base:2,cur:1,rate:50.0}, wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0} } }
+          ]},
+          { name: "동양통신", stores: [
+            { name: "동양통신 덕진본점",   m: { op:{base:22,cur:0,rate:0.0}, mnp:{base:10,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "동양통신 진북태평점", m: { op:{base:4,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0},  wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "바른대리점", stores: [
+            { name: "바른대리점 상동점",        m: { op:{base:23,cur:1,rate:4.3}, mnp:{base:4,cur:1,rate:25.0},  wire:{base:1,cur:1,rate:100.0},giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "바른대리점 전주대점",      m: { op:{base:23,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "바른대리점 정읍점",        m: { op:{base:28,cur:1,rate:3.6}, mnp:{base:5,cur:1,rate:20.0},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "바른대리점 하가프리미엄점",m: { op:{base:27,cur:1,rate:3.7}, mnp:{base:8,cur:2,rate:25.0},  wire:{base:5,cur:2,rate:40.0}, giga:{base:5,cur:5,rate:100.0}, g1:{base:5,cur:4,rate:80.0}  } },
+            { name: "바른대리점 효천점",        m: { op:{base:7,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "본 대리점", stores: [
+            { name: "본 대리점 본텔점(본점)", m: { op:{base:40,cur:1,rate:2.5}, mnp:{base:11,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0} } }
+          ]},
+          { name: "서정대리점", stores: [
+            { name: "서정대리점 문학초점", m: { op:{base:55,cur:1,rate:1.8}, mnp:{base:5,cur:1,rate:20.0},  wire:{base:8,cur:1,rate:12.5}, giga:{base:8,cur:8,rate:100.0}, g1:{base:8,cur:4,rate:50.0}  } },
+            { name: "서정대리점 부송점",   m: { op:{base:41,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "서정대리점 송천점",   m: { op:{base:18,cur:1,rate:5.6}, mnp:{base:6,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "서정대리점 수송점",   m: { op:{base:21,cur:1,rate:4.8}, mnp:{base:6,cur:2,rate:33.3},  wire:{base:3,cur:2,rate:66.7}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:1,rate:33.3}  } },
+            { name: "서정대리점 아중점",   m: { op:{base:23,cur:1,rate:4.3}, mnp:{base:4,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "서정대리점 영등점",   m: { op:{base:65,cur:1,rate:1.5}, mnp:{base:8,cur:1,rate:12.5},  wire:{base:8,cur:1,rate:12.5}, giga:{base:8,cur:8,rate:100.0}, g1:{base:8,cur:3,rate:37.5}  } },
+            { name: "서정대리점 중화산점", m: { op:{base:39,cur:1,rate:2.6}, mnp:{base:4,cur:1,rate:25.0},  wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:2,rate:66.7}  } },
+            { name: "서정대리점 평화점",   m: { op:{base:84,cur:1,rate:1.2}, mnp:{base:10,cur:2,rate:20.0}, wire:{base:7,cur:2,rate:28.6}, giga:{base:7,cur:7,rate:100.0}, g1:{base:7,cur:1,rate:14.3}  } },
+            { name: "서정대리점 호성점",   m: { op:{base:38,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "서정대리점 효자점",   m: { op:{base:40,cur:0,rate:0.0}, mnp:{base:6,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]},
+          { name: "순창대리점", stores: [
+            { name: "순창대리점 본점", m: { op:{base:10,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "신세계대리점", stores: [
+            { name: "신세계대리점 고창점", m: { op:{base:28,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "익산남부대리점", stores: [
+            { name: "익산남부대리점 본점", m: { op:{base:19,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "익산자유대리점", stores: [
+            { name: "익산자유대리점 본점", m: { op:{base:21,cur:1,rate:4.8}, mnp:{base:2,cur:1,rate:50.0}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "전북경원대리점", stores: [
+            { name: "전북경원대리점 모래내점", m: { op:{base:16,cur:1,rate:6.3}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:2,rate:100.0} } },
+            { name: "전북경원대리점 본점",     m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "전북고창대리점", stores: [
+            { name: "전북고창대리점 본점", m: { op:{base:40,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "전북나은", stores: [
+            { name: "전북나은 만성점",         m: { op:{base:16,cur:1,rate:6.3}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:0,rate:0.0},   g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "전북나은 부안점",         m: { op:{base:7,cur:0,rate:0.0},  mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "전북나은 임실점",         m: { op:{base:6,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "전북나은 중화산점",       m: { op:{base:20,cur:1,rate:5.0}, mnp:{base:0,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "전북나은 평화점",         m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "전북나은 혁신점",         m: { op:{base:8,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "전북나은 효자1가점",      m: { op:{base:7,cur:0,rate:0.0},  mnp:{base:2,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "전북나은대리점 김제점",   m: { op:{base:14,cur:1,rate:7.1}, mnp:{base:6,cur:0,rate:0.0}, wire:{base:2,cur:0,rate:0.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}   } },
+            { name: "전북나은대리점 도통점",   m: { op:{base:19,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "전북정읍대리점", stores: [
+            { name: "전북정읍대리점 본점", m: { op:{base:25,cur:1,rate:4.0}, mnp:{base:3,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "중부대리점", stores: [
+            { name: "중부대리점 반월점",         m: { op:{base:46,cur:1,rate:2.2}, mnp:{base:8,cur:0,rate:0.0},   wire:{base:3,cur:0,rate:0.0},  giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:2,rate:66.7}  } },
+            { name: "중부대리점 삼봉지점",       m: { op:{base:11,cur:1,rate:9.1}, mnp:{base:5,cur:1,rate:20.0},  wire:{base:4,cur:1,rate:25.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:2,rate:50.0}  } },
+            { name: "중부대리점 송천프리미엄점", m: { op:{base:36,cur:1,rate:2.8}, mnp:{base:6,cur:2,rate:33.3},  wire:{base:4,cur:2,rate:50.0}, giga:{base:4,cur:4,rate:100.0}, g1:{base:4,cur:0,rate:0.0}   } },
+            { name: "중부대리점 안골점",         m: { op:{base:25,cur:1,rate:4.0}, mnp:{base:2,cur:1,rate:50.0},  wire:{base:1,cur:1,rate:100.0},giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "중부대리점 에코시티점",     m: { op:{base:33,cur:1,rate:3.0}, mnp:{base:14,cur:3,rate:21.4}, wire:{base:6,cur:3,rate:50.0}, giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:3,rate:50.0}  } },
+            { name: "중부대리점 중화산점",       m: { op:{base:10,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "중부대리점 평화점",         m: { op:{base:63,cur:1,rate:1.6}, mnp:{base:10,cur:1,rate:10.0}, wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:3,rate:100.0} } },
+            { name: "중부대리점 혁신점",         m: { op:{base:49,cur:1,rate:2.0}, mnp:{base:5,cur:1,rate:20.0},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:2,rate:100.0} } }
+          ]},
+          { name: "중앙대리점", stores: [
+            { name: "중앙대리점 동산점", m: { op:{base:54,cur:1,rate:1.9}, mnp:{base:15,cur:1,rate:6.7}, wire:{base:3,cur:1,rate:33.3}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:2,rate:66.7} } },
+            { name: "중앙대리점 본점",   m: { op:{base:32,cur:1,rate:3.1}, mnp:{base:2,cur:1,rate:50.0}, wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:0,rate:0.0}  } }
+          ]},
+          { name: "태산대리점", stores: [
+            { name: "태산대리점 장수점", m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "하은", stores: [
+            { name: "하은대리점 본점", m: { op:{base:82,cur:1,rate:1.2}, mnp:{base:10,cur:4,rate:40.0}, wire:{base:14,cur:4,rate:28.6}, giga:{base:14,cur:14,rate:100.0}, g1:{base:14,cur:8,rate:57.1} } }
+          ]},
+          { name: "한성대리점", stores: [
+            { name: "한성대리점 나운2호점", m: { op:{base:17,cur:1,rate:5.9}, mnp:{base:3,cur:1,rate:33.3}, wire:{base:1,cur:1,rate:100.0}, giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "한성대리점 아중점",   m: { op:{base:13,cur:1,rate:7.7}, mnp:{base:2,cur:0,rate:0.0},  wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "한성대리점 최강점",   m: { op:{base:34,cur:1,rate:2.9}, mnp:{base:1,cur:0,rate:0.0},  wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]}
+        ]
+      },
+      {
+        name: "제주",
+        summary: {
+          op:   { base:  38, cur:  15, rate: 39.5 },
+          mnp:  { base:  95, cur:  17, rate: 17.9 },
+          wire: { base:  59, cur:  25, rate: 42.4 },
+          giga: { base:  59, cur:  55, rate: 93.2 },
+          g1:   { base:  59, cur:  44, rate: 74.6 }
+        },
+        agencies: [
+          { name: "JS대리점", stores: [
+            { name: "JS대리점 인제점", m: { op:{base:55,cur:1,rate:1.8}, mnp:{base:8,cur:1,rate:12.5}, wire:{base:6,cur:1,rate:16.7}, giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:3,rate:50.0} } }
+          ]},
+          { name: "서귀포대리점", stores: [
+            { name: "서귀포대리점 녹원점", m: { op:{base:25,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "서귀포대리점 본점",   m: { op:{base:140,cur:1,rate:0.7}, mnp:{base:5,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } }
+          ]},
+          { name: "스마일대리점", stores: [
+            { name: "스마일대리점 남녕점", m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:4,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "스마일대리점 대정점", m: { op:{base:13,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "스마일대리점 동홍점", m: { op:{base:39,cur:1,rate:2.6}, mnp:{base:3,cur:1,rate:33.3},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "스마일대리점 삼화점", m: { op:{base:46,cur:1,rate:2.2}, mnp:{base:3,cur:0,rate:0.0},   wire:{base:2,cur:0,rate:0.0},  giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "스마일대리점 화북점", m: { op:{base:5,cur:0,rate:0.0},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } }
+          ]},
+          { name: "앤유", stores: [
+            { name: "앤유대리점 본점",   m: { op:{base:27,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "앤유대리점 한림점", m: { op:{base:9,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "오름대리점", stores: [
+            { name: "오름대리점 본점",   m: { op:{base:28,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "오름대리점 아라점", m: { op:{base:28,cur:1,rate:3.6}, mnp:{base:1,cur:2,rate:200.0}, wire:{base:6,cur:2,rate:33.3}, giga:{base:6,cur:6,rate:100.0}, g1:{base:6,cur:6,rate:100.0} } },
+            { name: "오름대리점 인제점", m: { op:{base:30,cur:1,rate:3.3}, mnp:{base:6,cur:1,rate:16.7},  wire:{base:2,cur:1,rate:50.0}, giga:{base:2,cur:2,rate:100.0}, g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "오름대리점 한림점", m: { op:{base:9,cur:1,rate:11.1}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]},
+          { name: "제주E&T", stores: [
+            { name: "제주E&T대리점 노형점", m: { op:{base:14,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "제주E&T대리점 도남점", m: { op:{base:7,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "제주E&T대리점 삼화점", m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "제주E&T대리점 시청점", m: { op:{base:59,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "제주광양대리점", stores: [
+            { name: "제주광양대리점 대학로점",    m: { op:{base:8,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "제주광양대리점 삼화점",      m: { op:{base:24,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "제주광양대리점 서부점",      m: { op:{base:17,cur:0,rate:0.0}, mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "제주광양대리점 아라점",      m: { op:{base:15,cur:0,rate:0.0}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "제주광양대리점 연동문화점",  m: { op:{base:57,cur:1,rate:1.8}, mnp:{base:9,cur:2,rate:22.2},  wire:{base:2,cur:2,rate:100.0},giga:{base:2,cur:1,rate:50.0},  g1:{base:2,cur:1,rate:50.0}  } },
+            { name: "제주광양대리점 중앙로 본점", m: { op:{base:68,cur:1,rate:1.5}, mnp:{base:7,cur:1,rate:14.3},  wire:{base:9,cur:1,rate:11.1}, giga:{base:9,cur:9,rate:100.0}, g1:{base:9,cur:6,rate:66.7}  } },
+            { name: "제주광양대리점 터미널점",    m: { op:{base:56,cur:1,rate:1.8}, mnp:{base:2,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } }
+          ]},
+          { name: "제주굿모닝", stores: [
+            { name: "제주굿모닝대리점 노형뉴타운점", m: { op:{base:23,cur:1,rate:4.3},  mnp:{base:1,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:0,rate:0.0},   g1:{base:1,cur:0,rate:0.0}   } },
+            { name: "제주굿모닝대리점 동우점",       m: { op:{base:46,cur:1,rate:2.2},  mnp:{base:2,cur:2,rate:100.0}, wire:{base:3,cur:2,rate:66.7}, giga:{base:3,cur:3,rate:100.0}, g1:{base:3,cur:3,rate:100.0} } },
+            { name: "제주굿모닝대리점 서문점",       m: { op:{base:28,cur:0,rate:0.0},  mnp:{base:4,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "제주굿모닝대리점 성산점",       m: { op:{base:24,cur:1,rate:4.2},  mnp:{base:3,cur:0,rate:0.0},   wire:{base:1,cur:0,rate:0.0},  giga:{base:1,cur:1,rate:100.0}, g1:{base:1,cur:1,rate:100.0} } },
+            { name: "제주굿모닝대리점 연동점",       m: { op:{base:27,cur:0,rate:0.0},  mnp:{base:0,cur:0,rate:0.0},   wire:{base:0,cur:0,rate:0.0},  giga:{base:0,cur:0,rate:0.0},   g1:{base:0,cur:0,rate:0.0}   } },
+            { name: "제주굿모닝대리점 이도점",       m: { op:{base:56,cur:1,rate:1.8},  mnp:{base:9,cur:2,rate:22.2},  wire:{base:5,cur:2,rate:40.0}, giga:{base:5,cur:5,rate:100.0}, g1:{base:5,cur:4,rate:80.0}  } },
+            { name: "제주굿모닝대리점 해피점",       m: { op:{base:111,cur:1,rate:0.9}, mnp:{base:8,cur:1,rate:12.5},  wire:{base:9,cur:1,rate:11.1}, giga:{base:9,cur:8,rate:88.9},  g1:{base:9,cur:8,rate:88.9}  } }
+          ]},
+          { name: "제주대리점", stores: [
+            { name: "제주대리점 본점", m: { op:{base:25,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } }
+          ]},
+          { name: "제주정다운대리점", stores: [
+            { name: "제주정다운대리점 본점",     m: { op:{base:23,cur:0,rate:0.0}, mnp:{base:1,cur:0,rate:0.0}, wire:{base:0,cur:0,rate:0.0}, giga:{base:0,cur:0,rate:0.0}, g1:{base:0,cur:0,rate:0.0} } },
+            { name: "제주정다운대리점 서사라점", m: { op:{base:8,cur:0,rate:0.0},  mnp:{base:3,cur:0,rate:0.0}, wire:{base:1,cur:0,rate:0.0}, giga:{base:1,cur:0,rate:0.0}, g1:{base:1,cur:0,rate:0.0} } }
+          ]},
+          { name: "제주중앙대리점", stores: [] }
+        ]
+      }
+    ]
+  },
+
+  /* ── 도매채널
+     모수 정의 (소매와 동일 로직, 채널 = 서부도매):
+     · 가동률:      모수 = 서부도매 등록 판매점 수
+     · 유선 동판율: 모수 = 서부도매 초고속 신규 건수 (소매 agrmt_3yr=1 동일 조건, 채널=도매)
+                    자수 = 서부도매 초고속 신규 중 IPTV 동시 개통 건수
+     · MNP 동판율:  모수 = 서부도매 MNP 신규 건수 (소매 MNP 동판율과 동일 파생 로직, 채널=도매)
+     · 기가/1G 유치율: 모수 = 서부도매 초고속 신규 건수
+  ── */
+  wholesale: {
+    name: "서부도매(RS)",
+    metrics: [
+      { label: "가동률",         base: 353,  cur: 141, rate: 39.9, momP:  0.0 },
+      { label: "유선 동판율",    base: 368,  cur: 297, rate: 80.7, momP:  0.0 },
+      { label: "MNP 동판율",     base: 2766, cur: 266, rate:  9.6, momP:  0.8 },
+      { label: "기가 유치율",    base: 368,  cur: 365, rate: 99.2, momP:  0.0 },
+      { label: "1G 이상 유치율", base: 368,  cur: 105, rate: 28.5, momP:  0.0 }
+    ]
+  },
+
+  detail: {
+    criteria: {
+      excellent: "H/S 20건↑ &nbsp;·&nbsp; 초고속 유치율 15%↑",
+      weak:      "H/S 50건↑ &nbsp;·&nbsp; 초고속 유치율 4%↓",
+      none:      "H/S 20건↑ &nbsp;·&nbsp; 3개월 초고속 실적 0건"
+    },
+    teams: [
+      { name: "동광주",
+        excellent: [
+          { store: "광주패밀리대리점 본점",         metric: "H/S 22건 · 유치율 18.2%" },
+          { store: "나은대리점 국동점",             metric: "H/S 20건 · 유치율 15.0%" },
+          { store: "나은대리점 금당2호점",          metric: "H/S 24건 · 유치율 45.8%" },
+          { store: "유한회사 한빛정보 순천 왕지점", metric: "H/S 20건 · 유치율 15.0%" }
+        ],
+        weak: [
+          { store: "나은대리점 마동점",   metric: "H/S 52건 · 유치율 1.9%" },
+          { store: "나은대리점 왕지점",   metric: "H/S 66건 · 유치율 1.5%" },
+          { store: "대광대리점 계림점",   metric: "H/S 59건 · 유치율 1.7%" },
+          { store: "봉화대리점 벌교역점", metric: "H/S 58건 · 유치율 1.7%" },
+          { store: "스카이대리점 풍암점", metric: "H/S 51건 · 유치율 0.0%" }
+        ],
+        none: [
+          { store: "고흥대리점 고흥채움점", metric: "H/S 30건 · 3개월 0건" }
+        ]
+      },
+      { name: "서광주",
+        excellent: [
+          { store: "광주인천상사대리점 첨단점", metric: "H/S 25건 · 유치율 20.0%" },
+          { store: "남선대리점 진월프리미엄점", metric: "H/S 24건 · 유치율 16.7%" },
+          { store: "베스트대리점 본점(본점)",   metric: "H/S 50건 · 유치율 16.0%" },
+          { store: "엠코리아대리점 쌍촌점",     metric: "H/S 28건 · 유치율 17.9%" }
+        ],
+        weak: [
+          { store: "광주백산대리점 수완점", metric: "H/S 52건 · 유치율 1.9%" },
+          { store: "태경대리점 해남본점",   metric: "H/S 68건 · 유치율 0.0%" }
+        ],
+        none: [
+          { store: "그린대리점 장흥점",         metric: "H/S 32건 · 3개월 0건" },
+          { store: "우성대리점 강진프리미엄점", metric: "H/S 32건 · 3개월 0건" },
+          { store: "태경대리점 진도점",         metric: "H/S 20건 · 3개월 0건" }
+        ]
+      },
+      { name: "전북",
+        excellent: [
+          { store: "더 대리점 서신점",         metric: "H/S 20건 · 유치율 20.0%" },
+          { store: "바른대리점 하가프리미엄점", metric: "H/S 27건 · 유치율 18.5%" },
+          { store: "중부대리점 에코시티점",     metric: "H/S 33건 · 유치율 18.2%" },
+          { store: "하은대리점 본점",           metric: "H/S 82건 · 유치율 17.1%" }
+        ],
+        weak: [],
+        none: [
+          { store: "전북고창대리점 본점", metric: "H/S 40건 · 3개월 0건" }
+        ]
+      },
+      { name: "제주",
+        excellent: [
+          { store: "오름대리점 아라점", metric: "H/S 28건 · 유치율 21.4%" }
+        ],
+        weak: [
+          { store: "서귀포대리점 본점",        metric: "H/S 140건 · 유치율 0.7%" },
+          { store: "제주E&T대리점 시청점",     metric: "H/S 59건 · 유치율 0.0%" },
+          { store: "제주광양대리점 연동문화점", metric: "H/S 57건 · 유치율 1.8%" },
+          { store: "제주광양대리점 터미널점",   metric: "H/S 56건 · 유치율 1.8%" }
+        ],
+        none: [
+          { store: "서귀포대리점 녹원점",   metric: "H/S 25건 · 3개월 0건" },
+          { store: "제주광양대리점 삼화점", metric: "H/S 24건 · 3개월 0건" }
+        ]
+      }
+    ]
+  }
+};
+
+/* ════════════════════════════════════════════
+   RENDER
+   ════════════════════════════════════════════ */
+document.getElementById("updatedAt").textContent = DASHBOARD_DATA.updatedAt || "기준일 —";
+
+function renderInsight(elId, points) {
+  const el = document.getElementById(elId);
+  if (!el || !points || !points.length) return;
+  el.innerHTML = `<div class="insight-box">
+    <span class="insight-icon">AI</span>
+    <div class="insight-body">
+      <div class="insight-label">AI Insight</div>
+      <ul>${points.map(p => `<li>${p}</li>`).join("")}</ul>
+    </div>
+  </div>`;
+}
+
+function renderKPIs() {
+  const grid = document.getElementById("kpiGrid");
+  grid.innerHTML = DASHBOARD_DATA.kpis.map(k => {
+    const cls  = k.momP > 0 ? "up" : k.momP < 0 ? "down" : "flat";
+    const icon = k.momP > 0 ? "▲" : k.momP < 0 ? "▼" : "―";
+    return `<div class="card kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-name">${k.name}</div>
+        <span class="pill ${cls}">${icon} ${Math.abs(k.momP).toFixed(1)}%p</span>
+      </div>
+      <div class="kpi-body">
+        <div class="gauge" style="--pct:${Math.min(k.rate, 100)}">
+          <span>${k.rate.toFixed(0)}%</span>
+        </div>
+        <div class="kpi-figures">
+          <div class="row"><span>목표</span><b>${k.target.toLocaleString()}${k.unit}</b></div>
+          <div class="row"><span>실적</span><b>${k.actual.toLocaleString()}${k.unit}</b></div>
+          <div class="row"><span>달성률</span><b>${k.rate.toFixed(1)}%</b></div>
+        </div>
+      </div>
+      <div class="kpi-review">
+        <div class="review-label">Review</div>
+        <ul>${k.reviewPoints && k.reviewPoints.length
+          ? k.reviewPoints.map(p => `<li>${p}</li>`).join("")
+          : `<li style="color:var(--text-faint)">—</li>`}
+        </ul>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderOrgTable(tableId, rows) {
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  tbody.innerHTML = rows.map(r => {
+    const rem  = r.target - r.actual;
+    const rate = r.target ? (r.actual / r.target * 100) : 0;
+    return `<tr class="${r.highlight ? "highlight" : ""}">
+      <td class="org-name">${r.name}</td>
+      <td>${r.target.toLocaleString()}</td>
+      <td>${r.actual.toLocaleString()}</td>
+      <td>${rem.toLocaleString()}</td>
+      <td>${r.dailyAvg.toLocaleString()}</td>
+      <td class="rate">${rate.toFixed(1)}%</td>
+    </tr>`;
+  }).join("");
+}
+
+const retailTeams = DASHBOARD_DATA.retail.teams;
+let currentTeam = null;
+let selectedAgencies = new Set();
+const metricLabel = { op:"가동률", mnp:"MNP 동판율", wire:"유선 동판율", giga:"기가 유치율", g1:"1G 유치율" };
+
+function renderTeamSummary() {
+  const grid = document.getElementById("teamSummaryGrid");
+  grid.innerHTML = retailTeams.map((t, i) => {
+    const s = t.summary || {};
+    const rows = ["op","mnp","wire","giga","g1"].map(k => {
+      const d = s[k]; if (!d) return "";
+      return `<div class="ts-row">
+        <span class="ts-label">${metricLabel[k]}</span>
+        <span class="ts-value">${d.rate.toFixed(1)}%<small>(${d.cur}/${d.base})</small></span>
+      </div>`;
+    }).join("");
+    return `<div class="card team-summary-card">
+      <div class="ts-name">${t.name}</div>
+      <div>${rows}</div>
+      <button type="button" class="ts-goto" data-idx="${i}">대리점 상세 보기 ›</button>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".ts-goto").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectTeam(parseInt(btn.dataset.idx));
+      document.getElementById("teamPills").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+}
+
+function renderTeamPills() {
+  const wrap = document.getElementById("teamPills");
+  wrap.innerHTML = retailTeams.map((t, i) =>
+    `<button class="team-pill" data-idx="${i}">${t.name}</button>`
+  ).join("");
+  wrap.querySelectorAll(".team-pill").forEach(btn => {
+    btn.addEventListener("click", () => selectTeam(parseInt(btn.dataset.idx)));
+  });
+}
+
+function selectTeam(idx) {
+  currentTeam = retailTeams[idx];
+  selectedAgencies = new Set();
+  document.querySelectorAll(".team-pill").forEach((b, i) => b.classList.toggle("active", i === idx));
+  const chipWrap = document.getElementById("agencyChips");
+  chipWrap.innerHTML = currentTeam.agencies.map((a, i) =>
+    `<button type="button" class="agency-chip" data-idx="${i}">${a.name}</button>`
+  ).join("");
+  chipWrap.querySelectorAll(".agency-chip").forEach(chip => {
+    chip.addEventListener("click", () => toggleAgency(parseInt(chip.dataset.idx), chip));
+  });
+  document.getElementById("agencyHint").textContent =
+    `${currentTeam.name} 팀 대리점 (${currentTeam.agencies.length}개) — 여러 개 선택 가능`;
+  renderStorePanel();
+}
+
+function toggleAgency(idx, chipEl) {
+  if (selectedAgencies.has(idx)) { selectedAgencies.delete(idx); chipEl.classList.remove("active"); }
+  else { selectedAgencies.add(idx); chipEl.classList.add("active"); }
+  renderStorePanel();
+}
+
+function metricCells(m) {
+  return ["op","mnp","wire","giga","g1"].map(k => {
+    const d = m[k];
+    if (!d) return `<td class="metric-cell">—</td><td class="metric-cell">—</td><td class="metric-cell rate">—</td>`;
+    const rateStr = d.base > 0 ? d.rate.toFixed(1) + "%" : "—";
+    return `<td class="metric-cell">${d.base}</td><td class="metric-cell">${d.cur}</td><td class="metric-cell rate">${rateStr}</td>`;
+  }).join("");
+}
+
+function renderStorePanel() {
+  const empty = document.getElementById("storeEmpty");
+  const panel = document.getElementById("storePanel");
+  if (!currentTeam || selectedAgencies.size === 0) {
+    panel.classList.remove("visible"); empty.style.display = "block";
+    empty.textContent = currentTeam
+      ? `${currentTeam.name} 팀의 대리점을 선택하면 매장 실적이 표시됩니다.`
+      : "팀과 대리점을 선택하면 소속 매장의 핵심지표가 표시됩니다.";
+    return;
+  }
+  const tbody = document.getElementById("storeTableBody");
+  const rows = [];
+  [...selectedAgencies].sort((a, b) => a - b).forEach(idx => {
+    const agency = currentTeam.agencies[idx];
+    if (agency.stores && agency.stores.length > 0) {
+      agency.stores.forEach(s => {
+        rows.push(`<tr>
+          <td class="store-name">${s.name}<span class="store-agency">${agency.name}</span></td>
+          ${metricCells(s.m)}
+        </tr>`);
+      });
+    } else {
+      rows.push(`<tr><td class="store-name" colspan="16"
+        style="color:var(--text-faint);font-weight:400;text-align:center;padding:14px;">
+        ${agency.name} — 매장별 상세 데이터 준비 중
+      </td></tr>`);
+    }
+  });
+  tbody.innerHTML = rows.join("");
+  empty.style.display = "none";
+  panel.classList.add("visible");
+}
+
+function renderWholesale() {
+  document.getElementById("wsName").textContent = DASHBOARD_DATA.wholesale.name;
+  const grid = document.getElementById("wholesaleGrid");
+  grid.innerHTML = DASHBOARD_DATA.wholesale.metrics.map(m => {
+    const cls  = m.momP > 0 ? "up" : m.momP < 0 ? "down" : "flat";
+    const icon = m.momP > 0 ? "▲" : m.momP < 0 ? "▼" : "―";
+    return `<div class="card ws-card">
+      <div class="label">${m.label}</div>
+      <div class="value">${m.rate.toFixed(1)}<small>%</small></div>
+      <div class="ws-count">모수 ${m.base.toLocaleString()} · 자수 ${m.cur.toLocaleString()}</div>
+      <span class="pill ${cls}">${icon} 전월비 ${Math.abs(m.momP).toFixed(1)}%p</span>
+    </div>`;
+  }).join("");
+}
+
+function renderDetail() {
+  const c = DASHBOARD_DATA.detail.criteria;
+  const teams = DASHBOARD_DATA.detail.teams;
+  const cases = [
+    { key: "excellent", title: "가동률 우수",          criteria: c.excellent },
+    { key: "weak",      title: "HS대비 유선 부진",     criteria: c.weak },
+    { key: "none",      title: "3개월 초고속 실적 無", criteria: c.none }
+  ];
+  const wrap = document.getElementById("detailBlocks");
+  wrap.innerHTML = cases.map(ci => {
+    const total = teams.reduce((s, t) => s + (t[ci.key]?.length || 0), 0);
+    const teamGroups = teams.map(t => {
+      const list = t[ci.key] || [];
+      const items = list.length
+        ? list.map(s => `<div class="case-list-item">
+            <span class="s-name">${s.store}</span>
+            <span class="s-metric">${s.metric}</span>
+          </div>`).join("")
+        : `<div class="case-list-empty">해당 매장 없음</div>`;
+      return `<div class="case-team-group">
+        <div class="ctg-head">${t.name} <span class="ctg-count">${list.length}개 매장</span></div>
+        <div class="case-list">${items}</div>
+      </div>`;
+    }).join("");
+    return `<div class="case-section">
+      <div class="case-section-head">
+        <span class="tag ${ci.key}">${ci.title}</span>
+        <span class="case-criteria-small">${ci.criteria}</span>
+        <span class="case-total">전체 ${total}개 매장</span>
+      </div>
+      <div class="case-team-wrap">${teamGroups}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ── TAB SWITCH ── */
+document.querySelectorAll(".nav-link").forEach(link => {
+  link.addEventListener("click", e => {
+    e.preventDefault();
+    const tabId = link.getAttribute("href").replace("#", "");
+    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    link.classList.add("active");
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`)?.classList.add("active");
+    document.getElementById(tabId)?.classList.add("active");
+  });
+});
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab)?.classList.add("active");
+    document.querySelector(`.nav-link[href="#${btn.dataset.tab}"]`)?.classList.add("active");
+  });
+});
+
+/* ── INIT ── */
+["tab1","tab2","tab3","tab4","tab5"].forEach(id =>
+  renderInsight(`insight${id.charAt(0).toUpperCase() + id.slice(1)}`, DASHBOARD_DATA.insights[id])
+);
+renderKPIs();
+renderOrgTable("broadbandTable", DASHBOARD_DATA.org.broadband);
+renderOrgTable("iptvTable",      DASHBOARD_DATA.org.iptv);
+renderTeamSummary();
+renderTeamPills();
+renderWholesale();
+renderDetail();
+</script>
+</body>
+</html>
